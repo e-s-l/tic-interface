@@ -8,7 +8,7 @@ import sys
 import socket
 
 
-class SerialPort:
+class SerialReader:
 
     # class instantiation:
     def __init__(self, port, speed):
@@ -20,16 +20,18 @@ class SerialPort:
     def open(self):
         try:
             self.serial = serial.Serial(self.port, self.speed)
-            print(f"Successfully opened Port {self.port}")
+            print(f"Successfully opened Serial Port {self.port}")
         except serial.SerialException as se:
             print(f"Failed to open Port {self.port}")
             print(se)
             sys.exit(1)  # remember non-zero exit code is bad....
 
     def read(self):
+        print("reading")
         if self.serial:
+            print("is open")
             data = self.serial.readline().decode().strip()
-            print(f"Received from port {self.port}: {data}")
+            print(f"Received from serial port {self.port}: {data}")
             return data
         else:
             print(f"Port {self.port} isn't open!")
@@ -37,8 +39,12 @@ class SerialPort:
 
     def write(self, data):
         if self.serial:
-            self.serial.write(data.encode())
-            print("Wrote to Port.")
+            if type(data) == str:
+                    data = data.encode()
+            elif type(data) == float:
+                data = data.pack()
+            self.serial.write(data)
+            print(f"Wrote {data} to Port {self.port}.")
         else:
             print("Cannot write to closed port.")
 
@@ -58,6 +64,7 @@ class UDPClient:
         self.server_address = address
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        print(f"UDP set-up to send to Server at {server_address} on port {self.server_port}")
 
     def send_message(self, message):
         self.client_socket.sendto(message.encode(), (self.server_address, self.server_port))
@@ -73,27 +80,28 @@ if __name__ == "__main__":
 
     ##############
 
-    serial_port = "COM5"
-    baud_rate = "9600"
-    serialPort = SerialPort(serial_port, baud_rate)
+    serial_port = "/dev/ttyV1"
+    baud_rate = 9600
+    serialPort = SerialReader(serial_port, baud_rate)
     serialPort.open()
 
     ##############
 
-    server_address = "127.0.0.1"
+    server_address = "10.0.107.147"
     server_port = 1234
     client = UDPClient(server_address, server_port)
 
     ##############
 
     try:
+        print("trying!")
         while 1:
+            print("loopy")
             line = serialPort.read()
             if line:
+                print(line)
                 client.send_message(line)
     except KeyboardInterrupt:
         serialPort.close()
-        client.close()
     finally:
-        serialPort.close()
         client.close()

@@ -20,6 +20,9 @@ class UDPServer:
     def receive(self):
         message, client_address = self.server_socket.recvfrom(1024)  # number of bytes, will have to change
         print(f"Received from {client_address}: {message.decode()}")
+        #
+        # need to include timestamp here of when received.
+        #
 
     def close(self):
         self.server_socket.close()
@@ -30,7 +33,7 @@ class UDPServer:
 if __name__ == "__main__":
 
     ##############
-    server_address = "127.0.0.1"  # "0.0.0.0" # = all available network interfaces
+    server_address = "10.0.107.148"  # "0.0.0.0" # = all available network interfaces
     server_port = 1234  # what's the default UDP port again?
     server = UDPServer(server_address, server_port)
 
