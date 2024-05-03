@@ -25,6 +25,7 @@ class SerialReader:
     def open(self):
         try:
             self.serial = serial.Serial(self.port, self.speed)
+            time.sleep(1)
             print("Successfully opened Port %s" % self.port)
         except serial.SerialException as se:
             print("Failed to open Port %s" % self.port)
@@ -43,8 +44,11 @@ class SerialReader:
             if type(data) == str:
                 data = data.encode()
             elif type(data) == float:
-                data = data.pack()      # this doesn't work...
+                print("data is float")
+                data = bytes(str(data),'utf-8')      # this doesn't work...
             self.serial.write(data)
+            self.serial.flush()
+            #self.serial.reset_input_buffer()
             print(f"Wrote {data} to Port {self.port}.")
         else:
             print("Cannot write to closed port.")
@@ -63,7 +67,7 @@ class SerialReader:
 if __name__ == "__main__":
 
     port_name = "/dev/ttyV0"
-    baud_rate = "9600"
+    baud_rate = 9600
     serialPort = SerialReader(port_name, baud_rate)
     serialPort.open()
 
@@ -75,7 +79,8 @@ if __name__ == "__main__":
 
         while 1:
             data = str(random.uniform(0,30))
-            serialPort.write(data)
+            #data = "help"
+            serialPort.write(data+"\n")
             time.sleep(0.100)       #sleep takes seconds
 
     except KeyboardInterrupt:
