@@ -14,5 +14,7 @@ Then on the otherside run:
 
 sudo python3 Receive_n_Send.py
 
+(Also, to kill the server on the windows machine used: 'Fn Ctrl B')
+
 
 
