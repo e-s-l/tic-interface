@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     ##############
 
-    server_address = "127.0.0.1"
+    server_address = "10.0.107.148"
     server_port = 1234
     client = UDPClient(server_address, server_port)
 
