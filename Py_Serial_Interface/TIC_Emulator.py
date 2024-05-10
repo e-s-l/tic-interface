@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ########################
 ### TIC Emulator     ###
 ########################
@@ -9,6 +11,10 @@ import serial
 import sys
 import random
 import time
+
+#########################
+
+#sudo socat -d -d -v pty,rawer,echo=0,link=/dev/ttyV0,rawer,b9600 pty,rawer,echo=0,link=/dev/ttyV1,rawer,b9600
 
 #########################
 
@@ -34,7 +40,8 @@ class SerialReader:
 
     def read(self):
         if self.serial:
-            return self.serial.readline().decode().strip()
+            #return self.serial.readline().decode().strip()
+             return self.serial.read(100).decode().strip()
         else:
             print("Port %s isn't open!" % self.port)
             return None
@@ -81,6 +88,7 @@ if __name__ == "__main__":
             data = str(random.uniform(0,30))
             #data = "help"
             serialPort.write(data+"\n")
+            #serialPort.write(data)
             time.sleep(0.100)       #sleep takes seconds
 
     except KeyboardInterrupt:
