@@ -9,6 +9,7 @@ import serial
 import sys
 import socket
 
+from UDPServer_SQLDB_config import *
 
 class SerialReader:
 
@@ -89,7 +90,8 @@ if __name__ == "__main__":
 
     ##############
 
-    server_address = "10.0.107.147"
+    server_address = UDP_server_address
+
     server_port = 1234
     client = UDPClient(server_address, server_port)
 

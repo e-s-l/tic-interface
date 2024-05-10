@@ -1,0 +1,61 @@
+#################
+# SQL & PYTHON: #
+#################
+
+# need a driver:
+import mysql.connector
+
+# need a connection object
+ cnx = mysql.connector.connect(
+                host=self.host,
+                user=self.user,
+                password=self.pw,
+                database=self.database
+            )
+
+# then need a cursor:
+csr = self.connection.cursor()
+# cursors process query return row by row
+# there exists option to buffer cursors
+
+# then:
+
+"SHOW TABLES LIKE %s", (table,)
+
+  create_table_query = """
+                CREATE TABLE {} (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    {} DATETIME,
+                    {} VARCHAR(255)
+                )
+
+
+  "SHOW COLUMNS FROM {} LIKE %s".format(table), (column,)
+
+   "ALTER TABLE {} ADD COLUMN {} DATETIME".format(table, column)
+
+               query = "INSERT INTO %s (%s, %s) " % (table, table_cols[0], table_cols[1]) + " VALUES (%s, %s)"
+            csr.execute(query, (time_stamp, tic_value))
+            self
+
+#####################
+# MISC GENERAL SQL: #
+#####################
+
+# to delete a column from a table:
+
+ALTER TABLE table_name DROP COLUMN col_name1;
+
+# to show all tables in database:
+
+SHOW TABLES;
+
+# to delete a table:
+
+DROP TABLE table_name;
+
+# to show columns and data in a table:
+
+SELECT * FROM table_name;
+
+

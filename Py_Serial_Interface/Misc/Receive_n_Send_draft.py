@@ -3,14 +3,13 @@
 # SAVE TO DATABASE
 ########################
 
-# for UDP Server
 import socket
-# for SQL database
+
 import mysql.connector  # driver for python2mysql
 from mysql.connector import errorcode
+
 from datetime import datetime, timezone  # for time stamp on db upload
-# configuration
-from UDPServer_SQLDB_config import *
+
 ####################
 
 
@@ -47,16 +46,16 @@ class SQLDatabase:
         self.connect()
 
     def connect(self):
-        # make connection to sql server and select the db
         try:
+            # make connection to sql server and select the db
             cnx = mysql.connector.connect(
                 host=self.host,
                 user=self.user,
                 password=self.pw,
-                database=self.database
+                database=self.database  # this will have to exist already
             )
             self.connection = cnx
-            print(cnx)                          # debug: show result of connection
+            print(cnx)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("Access Denied")
@@ -66,15 +65,21 @@ class SQLDatabase:
                 print("Other: %s" % err)
 
     def upload(self, data):
-        # push data to the database
+
         try:
             if not self.connection.is_connected():
+                # self.connection is None or
                 print("Connection is not established.")
                 return
-            csr = self.connection.cursor()          # cursors process query return row by row
 
-            # check if the table exists
-            table = DB_table
+            print("trying")
+
+            csr = self.connection.cursor()  # cursors process query return row by row
+            print("created cursor")  # there exists option to buffer cursors
+
+            table = "fake_tic_data"
+
+            # Check if the table exists
             csr.execute("SHOW TABLES LIKE %s", (table,))
             table_exists = csr.fetchone()
             if not table_exists:
@@ -82,26 +87,22 @@ class SQLDatabase:
                 create_table_query = """
                 CREATE TABLE {} (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    {} DATETIME,
-                    {} VARCHAR(255)
+                    time_stamp DATETIME,
+                    tic_value VARCHAR(255)
                 )
-                """.format(table, table_cols[0], table_cols[1])
+                """.format(table)
                 csr.execute(create_table_query)
                 print("Created table {}".format(table))
 
-            # check if the table has the required columns
-            columns_to_check = table_cols
+            # Check if the table has the required columns
+            columns_to_check = ['time_stamp', 'tic_value']
             for column in columns_to_check:
                 csr.execute("SHOW COLUMNS FROM {} LIKE %s".format(table), (column,))
                 column_exists = csr.fetchone()
                 if not column_exists:
                     # Add the column if it doesn't exist
-                    if column == table_cols[0]:
-                        alter_table_query = "ALTER TABLE {} ADD COLUMN {} DATETIME".format(table, column)
-                        csr.execute(alter_table_query)
-                    else:
-                        alter_table_query = "ALTER TABLE {} ADD COLUMN {} VARCHAR(255)".format(table, column)
-                        csr.execute(alter_table_query)
+                    alter_table_query = "ALTER TABLE {} ADD COLUMN {} DATETIME".format(table, column)
+                    csr.execute(alter_table_query)
                     print("Added column '{}' to table {}".format(column, table))
             ###
 
@@ -109,16 +110,20 @@ class SQLDatabase:
             tic_value = data
 
             ###
-            query = "INSERT INTO %s (%s, %s) " % (table, table_cols[0], table_cols[1]) + " VALUES (%s, %s)"
+            # query = "INSERT INTO {} (time_stamp, tic_value) VALUES (%s, %s)".format(table)
+            query = "INSERT INTO %s (time_stamp, tic_value) " % table + " VALUES (%s, %s)"
+
             csr.execute(query, (time_stamp, tic_value))
-            self.connection.commit()        # make sure data is committed to db.
-            csr.close()                     # kill the cursor
+            print("wrote query")
+
+            self.connection.commit()  # make sure data is committed to db.
+            csr.close()
 
         except mysql.connector.Error as err:
             print("Upload Err: % s" % err)
 
     def close_connection(self):
-        # close the connection to the DB
+
         self.connection.close()
         print("committed and closed")
 
@@ -128,13 +133,13 @@ class SQLDatabase:
 if __name__ == "__main__":
 
     ##############
-    server_address = UDP_server_address
-    server_port = UDP_server_port
-    # Create udp server object
+    server_address = "10.0.107.147"     # "0.0.0.0" # = all available network interfaces
+    server_port = 1234                  # what's the default UDP port again?
+    # Get udp server object
     server = UDPServer(server_address, server_port)
 
-    # Create SQL database object
-    sql_db = SQLDatabase(db=date_base, host=host_address, user=username, pw=password)
+    # Ge SQL database object
+    sql_db = SQLDatabase(db="testdb", host="127.0.0.1", user="root", pw="password")
 
     # infinite loop
     try:
