@@ -24,6 +24,8 @@ public class Client {
     private BufferedWriter bufferedWriter;
     private FileReader fileReader;
     private String data;
+    private Thread lfmThread;
+    private Thread rnsThread;
 
     // constructer
     public Client(Socket socket) {
@@ -37,90 +39,41 @@ public class Client {
     }
 
     public String readSerialFile() {
+
         String serialFileName = "/dev/ttyV1"; // "/dev/ttyUSB1";
+        String data = null;
+
         try {
             BufferedReader buffFileReader = new BufferedReader(new FileReader(serialFileName));
-            String data = buffFileReader.readLine();
-            try {
-                while(data != null) {
-                        System.out.println("FROM SERIAL PORT: " + data);
-                }
-            } catch (IOException ioe) {
-                System.out.println(":(");
-            } finally {
-                return data;
-            }
-
-
+            data = buffFileReader.readLine();
         } catch (FileNotFoundException fnfe) {
-            System.out.println("FILE NOT FOUND");
+            System.out.println("FILE NOT FOUND: " + fnfe.getMessage());
             fnfe.printStackTrace();
+            System.exit(1);
+        } finally {
+            return data;
         }
-    }
-
-    public void readNSend() {
-        new Thread(new Runnable() {
-            @Override
-            public void run(){
-                try {
-                    while(true) {
-                        String data = readSerialFile(); // should give port name here...
-                        if (data != null) {
-                            sendData(data);
-                        } else {
-                            Thread.sleep(500);
-                        }
-                    }
-                } catch (InterruptedException e) {
-                        System.out.println(":(");
-                        closeEverything(socket, bufferedReader, bufferedWriter);
-                }
-            }
-        }).start();
     }
 
     public void sendData(String data) {
 
-        try {
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-            String msg = data;
+        if(socket.isConnected()){
+            try {
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+                String msg = data;
 
-            while(socket.isConnected()) {
                 if (data != null) {
                     System.out.println("Sending " + data);
                     bufferedWriter.write(msg);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
                 }
-                else {
-                    Thread.sleep(1000);
-                }
+            } catch (IOException e) {
+                System.out.println("IOE THROWN BY SENDDATA");
+                closeEverything(socket, bufferedReader, bufferedWriter);
             }
-        } catch (InterruptedException | IOException e) {
-            System.out.println("IOE THROWN BY SENDDATA");
-            closeEverything(socket, bufferedReader, bufferedWriter);
         }
-    }
-
-    public void listenForMessage() {
-        // this is again a blocking operation, so need new thread...
-
-        new Thread(new Runnable() {
-            @Override
-            public void run(){
-                String msg;
-
-                while(socket.isConnected()){
-                    try {
-                        msg = bufferedReader.readLine();
-                        System.out.println("FROM SERVER: " + msg);
-                    } catch (IOException ioe) {
-                        closeEverything(socket, bufferedReader, bufferedWriter);
-                    }
-                }
-            }
-        }).start();
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
@@ -138,6 +91,76 @@ public class Client {
             ioe.printStackTrace();
         }
     }
+
+    public void start() {
+        //
+        lfmThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                listenForMessage();
+            }
+        });
+
+        rnsThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                readNSend();
+            }
+        });
+
+        lfmThread.start();
+        rnsThread.start();
+    }
+
+    public void end() {
+         try {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+            //
+            lfmThread.interrupt();
+            lfmThread.join();
+            rnsThread.interrupt();
+            rnsThread.join();
+        } catch (InterruptedException ie) {
+                System.out.println("Thread interrupt!");
+        }
+    }
+
+    public void listenForMessage() {
+        while (!Thread.currentThread().isInterrupted()) {
+            String msg;
+            while(socket.isConnected()){
+                try {
+                    msg = bufferedReader.readLine();
+                    System.out.println("FROM SERVER: " + msg);
+                    if (msg == null) {
+                        end();
+                        System.exit(1);
+                    }
+                } catch (IOException ioe) {
+                    closeEverything(socket, bufferedReader, bufferedWriter);
+                }
+            }
+        }
+    }
+
+    public void readNSend() {
+        while (!Thread.currentThread().isInterrupted()) {
+            while (socket.isConnected()) {
+                try {
+                    String data = readSerialFile(); // should give port name here...
+                    if (data != null) {
+                        sendData(data);
+                    } else {
+                        Thread.sleep(500);
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println(":(");
+                    closeEverything(socket, bufferedReader, bufferedWriter);
+                }
+            }
+        }
+    }
+
     
      public static void main(String[] args) throws IOException {
         // to instantiate & run:
@@ -147,11 +170,9 @@ public class Client {
 
         Socket socket = new Socket(serverAddress, portNumber);
         Client client = new Client(socket);
-        //
-        client.listenForMessage();
-        client.readNSend();
-        //client.readSerialFile();
-        //client.sendData();
+
+        client.start();
+
     }  
 
 }

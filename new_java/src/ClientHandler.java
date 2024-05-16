@@ -21,11 +21,12 @@ public class ClientHandler implements Runnable {
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));     // note: stream = bytes, writer = characters
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clientIP = socket.getRemoteSocketAddress().toString();
+            String str = socket.getRemoteSocketAddress().toString();
+            this.clientIP = str.substring(1, str.length());
             //
             clientHandlers.add(this);
             //
-           broadcastMessage("Server: Client at" + this.clientIP + " has connected.");
+           broadcastMessage("Server: Client at " + this.clientIP + " has connected.");
 
         } catch (IOException ioe) {
             closeEverything(socket, bufferedReader, bufferedWriter);
@@ -73,7 +74,7 @@ public class ClientHandler implements Runnable {
 
     public void removeClientHandler() {
         clientHandlers.remove(this);
-        broadcastMessage("Server: Client at" + this.clientIP + " has disconnected.");
+        broadcastMessage("Server: Client at " + this.clientIP + " has disconnected.");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {

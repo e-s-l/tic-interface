@@ -31,8 +31,8 @@ public class Server {
                 ClientHandler clientHandler = new ClientHandler(socket);
                 
                 //thread object
-                Thread thread = new Thread(clientHandler);
-                thread.start();
+                Thread clientHandlerThread = new Thread(clientHandler);
+                clientHandlerThread.start();
             }
         } catch (IOException ioe) {
             System.out.println(":(");
@@ -52,13 +52,9 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         //to instantiate & run:
-
         ServerSocket serverSocket = new ServerSocket(1234);
         Server server = new Server(serverSocket);
         server.startServer();
-
-        // hmmmm
-         server.closeServerSocket();
 
     }  
 }
