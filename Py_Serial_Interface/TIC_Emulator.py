@@ -89,7 +89,7 @@ if __name__ == "__main__":
             #data = "help"
             serialPort.write(data+"\n")
             #serialPort.write(data)
-            time.sleep(0.100)       #sleep takes seconds
+            time.sleep(0.200)       #sleep takes seconds
 
     except KeyboardInterrupt:
         serialPort.close()
