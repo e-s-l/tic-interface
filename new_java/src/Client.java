@@ -31,6 +31,9 @@ public class Client {
     public Client(Socket socket) {
         try {
             this.socket = socket;
+            if(socket.isConnected()){
+                System.out.println("Connected to Server.");
+            }
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException ioe) {
@@ -77,6 +80,7 @@ public class Client {
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+        System.out.println("Client closing everything.");
          try {
             if (bufferedReader != null) {
                 bufferedReader.close();
