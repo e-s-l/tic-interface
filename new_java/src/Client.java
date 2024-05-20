@@ -1,60 +1,65 @@
 import java.io.*;
-import java.net.Socket;
+import java.net.*;
 import java.util.*;
 
-//
-// READ AND SEND
-//
-// CLIENT CLASS
-//
-// FUNCTIONALITY:
-// Read in Data from live File... (open)
-// Pre-process Data as necessary... (clean)
-// Create Socket connection to Server... (connect)
-// Listen and Send to Socket...             (chat)
-// Note: listen is for control/command information back from server.
-//
 
-// NEED TO CATCH INTERRUPT CTRL C AND CLOSE CONNECTION PROPERLY
+// READ AND SEND
+// CLIENT CLASS
+
+/*
+ FUNCTIONALITY:
+ Read in Data from live File... (open)
+ Pre-process Data as necessary... (clean)
+ Create Socket connection to Server... (connect)
+ Listen and Send to Socket...             (chat)
+ Note: listen is for control/command information back from server.
+*/
 
 public class Client {
 
+    // instantiate:
+    // object properties:
     private Socket socket;
+    private String serialSource;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    private FileReader fileReader;
-    private String data;
+
+    //
     private Thread lfmThread;
     private Thread rnsThread;
 
+
     // constructer
-    public Client(Socket socket) {
+    public Client(Socket socket, String serialFile) {
         try {
-            this.socket = socket;
+            this.serialSource = serialFile;     // the path to the serial file to be read from
+            this.socket = socket;               // create the tcp socket connection
             if(socket.isConnected()){
                 System.out.println("Connected to Server.");
             }
+            // set-up the in and out put throu' this socket.
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException ioe) {
+        } catch (IOException  ioe) {
+            System.out.println("FAILED TO INITIALISE CLIENT: \n" + ioe.getMessage());
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
     public String readSerialFile() {
 
-        String serialFileName = "/dev/ttyV1"; // "/dev/ttyUSB1";
-        String data = null;
+        FileReader fileReader;
+        // String data;
+        String data = null;         // initialise the empty data
 
         try {
-            BufferedReader buffFileReader = new BufferedReader(new FileReader(serialFileName));
+            BufferedReader buffFileReader = new BufferedReader(new FileReader(this.serialSource));
             data = buffFileReader.readLine();
         } catch (FileNotFoundException fnfe) {
-            System.out.println("FILE NOT FOUND: " + fnfe.getMessage());
-            fnfe.printStackTrace();
+            System.out.println("FILE NOT FOUND: \n" + fnfe.getMessage());
             System.exit(1);
         } finally {
-            return data;
+            return data;        // always return data: returns null if failed to open file
         }
     }
 
@@ -62,18 +67,18 @@ public class Client {
 
         if(socket.isConnected()){
             try {
+                // clear the lines:
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
-                String msg = data;
-
+                // if null data nothing happens...
                 if (data != null) {
-                    System.out.println("Sending " + data);
-                    bufferedWriter.write(msg);
+                    System.out.println("Sending " + data);  // for debug...
+                    bufferedWriter.write(data);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
                 }
-            } catch (IOException e) {
-                System.out.println("IOE THROWN BY SENDDATA");
+            } catch (IOException ioe) {
+                System.out.println("IOE THROWN BY SENDDATA \n" + ioe.getMessage());
                 closeEverything(socket, bufferedReader, bufferedWriter);
             }
         }
@@ -97,6 +102,7 @@ public class Client {
     }
 
     public void start() {
+
         //
         lfmThread = new Thread(new Runnable() {
             @Override
@@ -116,16 +122,16 @@ public class Client {
         rnsThread.start();
     }
 
-    public void end() {
+    public void finish() {
          try {
             closeEverything(socket, bufferedReader, bufferedWriter);
             //
             lfmThread.interrupt();
-            lfmThread.join();
             rnsThread.interrupt();
+            lfmThread.join();
             rnsThread.join();
         } catch (InterruptedException ie) {
-                System.out.println("Thread interrupt!");
+            System.out.println("Thread interrupt! \n" + ie.getMessage());
         }
     }
 
@@ -137,7 +143,7 @@ public class Client {
                     msg = bufferedReader.readLine();
                     System.out.println("FROM SERVER: " + msg);
                     if (msg == null) {
-                        end();
+                        finish();
                         System.exit(1);
                     }
                 } catch (IOException ioe) {
@@ -151,14 +157,14 @@ public class Client {
         while (!Thread.currentThread().isInterrupted()) {
             while (socket.isConnected()) {
                 try {
-                    String data = readSerialFile(); // should give port name here...
+                    String data = readSerialFile();
                     if (data != null) {
                         sendData(data);
-                    } else {
+                    } else {                            // if null data then wait...
                         Thread.sleep(500);
                     }
-                } catch (InterruptedException e) {
-                    System.out.println(":(");
+                } catch (InterruptedException ie) {
+                    System.out.println("Thread interrupt! \n" + ie.getMessage());
                     closeEverything(socket, bufferedReader, bufferedWriter);
                 }
             }
@@ -167,15 +173,21 @@ public class Client {
 
     
      public static void main(String[] args) throws IOException {
-        // to instantiate & run:
+        // to instantiate & run
 
-        String serverAddress =  "127.0.0.1"; // local host // "10.0.107.147"; // windows laptop // "10.0.109.133"; // Ny Mitra
-        int portNumber = 1234;
+        // CONFIGURATION VARIABLES:
+        String serverAddress =  "127.0.0.1";    // local host // "10.0.107.147"; // windows laptop // "10.0.109.133"; // Ny Mitra
+        int portNumber = 1234;                  // the tcp listening port
+        String serialFileName = "/dev/ttyV1";   // actual: "/dev/ttyUSB1";
+        //
 
-        Socket socket = new Socket(serverAddress, portNumber);
-        Client client = new Client(socket);
-
-        client.start();
+        try {
+            Socket socket = new Socket(serverAddress, portNumber);
+            Client client = new Client(socket, serialFileName);
+            client.start();
+        } catch (ConnectException ce) {
+           System.out.println("FAILED TO INITIALISE MAIN: \n" + ce.getMessage());
+        }
 
     }  
 

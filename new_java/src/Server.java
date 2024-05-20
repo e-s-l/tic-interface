@@ -4,9 +4,11 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.IOException;
 
-//
 // RECEIVE & SAVE
-//
+/*
+    Most of the mechanics of this occurs in the ClientHandler code.
+*/
+
 
 // class:
 public class Server {
@@ -27,7 +29,7 @@ public class Server {
             while (!serverSocket.isClosed()){
             
                 Socket socket = serverSocket.accept();          // note this is a blocking method that returns a socket object
-                System.out.println("Client has connected.");
+ //               System.out.println("Client has connected.");
                 ClientHandler clientHandler = new ClientHandler(socket);
                 
                 //thread object
