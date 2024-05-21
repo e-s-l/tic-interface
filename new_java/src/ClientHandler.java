@@ -3,7 +3,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class ClientHandler implements Runnable {
-    // instances executed by seperate threads
+    // instances to be executed by seperate threads
 
     // static array list of instace of this class, ie each of the clients, so we can broadcast...
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();  // static means belongs to class not instances of the class

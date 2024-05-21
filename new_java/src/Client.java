@@ -176,7 +176,7 @@ public class Client {
         // to instantiate & run
 
         // CONFIGURATION VARIABLES:
-        String serverAddress =  "127.0.0.1";    // local host // "10.0.107.147"; // windows laptop // "10.0.109.133"; // Ny Mitra
+        String serverAddress =  "127.0.0.1";    // local host // "10.0.107.147"; // windows laptop // "10.0.109.133"; // Ny Mitra...
         int portNumber = 1234;                  // the tcp listening port
         String serialFileName = "/dev/ttyV1";   // actual: "/dev/ttyUSB1";
         //

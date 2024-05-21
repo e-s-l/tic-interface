@@ -38,12 +38,14 @@ public class Server {
             }
         } catch (IOException ioe) {
             System.out.println(":(");
+        } finally {
+            closeServer();
         }
     }
 
-    public void closeServerSocket(){        // where do you call this?
+    public void closeServer() {
         try {
-            if (serverSocket != null) {     // to avoid null pointers
+            if (serverSocket != null && !serverSocket.isClosed()) {     // to avoid null pointers
                 serverSocket.close();
                 System.out.println("Closed socket.");
             }
@@ -54,9 +56,14 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         //to instantiate & run:
-        ServerSocket serverSocket = new ServerSocket(1234);
-        Server server = new Server(serverSocket);
-        server.startServer();
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(1234);
+            Server server = new Server(serverSocket);
+            server.startServer();
+        } catch (IOException ioe) {
+           System.out.println("FAILED TO INITIALISE MAIN: \n" + ioe.getMessage());
+        }
 
     }  
 }
