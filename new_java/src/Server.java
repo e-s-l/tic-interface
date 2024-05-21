@@ -4,9 +4,11 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.IOException;
 
-//
 // RECEIVE & SAVE
-//
+/*
+    Most of the mechanics of this occurs in the ClientHandler code.
+*/
+
 
 // class:
 public class Server {
@@ -27,7 +29,7 @@ public class Server {
             while (!serverSocket.isClosed()){
             
                 Socket socket = serverSocket.accept();          // note this is a blocking method that returns a socket object
-                System.out.println("Client has connected.");
+ //               System.out.println("Client has connected.");
                 ClientHandler clientHandler = new ClientHandler(socket);
                 
                 //thread object
@@ -36,12 +38,14 @@ public class Server {
             }
         } catch (IOException ioe) {
             System.out.println(":(");
+        } finally {
+            closeServer();
         }
     }
 
-    public void closeServerSocket(){        // where do you call this?
+    public void closeServer() {
         try {
-            if (serverSocket != null) {     // to avoid null pointers
+            if (serverSocket != null && !serverSocket.isClosed()) {     // to avoid null pointers
                 serverSocket.close();
                 System.out.println("Closed socket.");
             }
@@ -52,9 +56,14 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         //to instantiate & run:
-        ServerSocket serverSocket = new ServerSocket(1234);
-        Server server = new Server(serverSocket);
-        server.startServer();
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(1234);
+            Server server = new Server(serverSocket);
+            server.startServer();
+        } catch (IOException ioe) {
+           System.out.println("FAILED TO INITIALISE MAIN: \n" + ioe.getMessage());
+        }
 
     }  
 }
