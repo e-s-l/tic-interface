@@ -52,7 +52,7 @@ public class s2eConnector {
 
         try {
 
-            DBHandler dbHandler = new DBHandler();
+           // DBHandler dbHandler = new DBHandler();
             Double ticVal;
 
             while (socket.isConnected()) {
@@ -60,7 +60,7 @@ public class s2eConnector {
                     String data = bufferedReader.readLine();
                     if (data != null) {
                         ticVal = preProcessString2Double(data.trim());
-                        dbHandler.saveValue(ticVal);
+                       // dbHandler.saveValue(ticVal);
                         System.out.println(ticVal);
                     }
                 } catch (IOException e) {
