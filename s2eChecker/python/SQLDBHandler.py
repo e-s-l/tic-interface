@@ -2,7 +2,7 @@
 import mysql.connector  # driver for python2mysql
 from mysql.connector import errorcode
 from datetime import datetime, timezone  # for time stamp on db upload
-
+#######################
 
 DB_table = "real_tic_data"
 table_cols = ['time_stamp', 'tic_value']

@@ -1,7 +1,7 @@
 # for influx db
-
 from datetime import datetime, timezone
 from influxdb import InfluxDBClient
+#######################
 
 
 class InfluxDatabase:
@@ -11,6 +11,7 @@ class InfluxDatabase:
         self.client = None
         self.database = db
         self.host = host
+        self.host_port = 8086
         self.user = user
         self.pw = pw
 
@@ -42,11 +43,12 @@ class InfluxDatabase:
 
     def connect(self):
         # make connection to server and select the db
-        self.client = InfluxDBClient(self.host, 8086, self.user, self.pw, self.database)
+        self.client = InfluxDBClient(self.host, self.host_port, self.user, self.pw, self.database)
         self.client.switch_database(self.database)
 
     def close_connection(self):
         # close the connection to the DB
         self.client.close()
 
+# well it's a lot simpler than the mysql version...
 
