@@ -1,4 +1,4 @@
-# TO RUN LOCALLY:
+## TO RUN LOCALLY:
 
 I used socat to create a virtual port pair
 
@@ -15,6 +15,3 @@ Then on the otherside run:
 sudo python3 Receive_n_Send.py
 
 (Also, to kill the server on the windows machine used: 'Fn Ctrl B')
-
-
-
