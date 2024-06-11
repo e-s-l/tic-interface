@@ -1,7 +1,7 @@
 **********************************************
 ## Serial Port -> UDP/TCP -> DB
 
-The original purpoes of this project was to take counter values from a serial port on one computer and load into a database.
+The original purpose of this project was to take counter values from a serial port on one computer and load into a database.
 Initially, there was to be an intervening UDP or TCP/IP client-server interface.
 
 However, in the process, we:
